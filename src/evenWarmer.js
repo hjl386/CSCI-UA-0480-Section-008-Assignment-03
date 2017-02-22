@@ -9,19 +9,17 @@ class Request{
 /*		let s = '';
 		s += 'GET /foo.html HTTP/1.1\r\n';	//Request line
 		s += 'Host: localhost:8080\r\n';	//Headers
-		s += '\r\n\r\n';	//Empty Line to mark the boundary between the header and body
-*/
-		//const req = new Request(s) - Using the constructor
+		s += '\r\n\r\n';	//Empty Line to mark the boundary between the header and body */
 		const path = httpRequest.split(' ')[1];
 		this.path = path;
 		const method = httpRequest.split(' ')[0];
 		this.method = method;
 		const headers = httpRequest.split('\r\n');
-		let arrHeader = headers.map(cur => { return cur.split(' '); });
+		const arrHeader = headers.map(cur => { return cur.split(' '); });
 		for (let i = 1; i < arrHeader.length; i++){
 			arrHeader[i][0] = arrHeader[i][0].slice(0, -1);
 		}
-		let objHeader = {};
+		const objHeader = {};
 		for (let i = 1; i < arrHeader.length; i++){
 			if(arrHeader[i][1] !== undefined){
 				objHeader[arrHeader[i][0]] = arrHeader[i][1];
@@ -36,18 +34,55 @@ class Request{
 		let s = this.method + ' ' + this.path + ' HTTP/1.1\r\n';
 		let counter = 0;
 		let len = 0;
-		for (let i in this.headers){this.headers.hasOwnProperty(i) ? len++ : null;}
-		for (let key in this.headers){
+		for (const i in this.headers){
+			if(this.headers.hasOwnProperty(i)){
+				len++;
+			}
+		}
+		for (const key in this.headers){
 			if (this.headers.hasOwnProperty(key)){
 				s += key + ": " + this.headers[key];
 				counter++;
 			}
-			counter !== len ? s += '\r\n' : null;
+			if (counter !== len){
+				s += '\r\n';
+			}
 		}
 		s += '\r\n\r\n' + this.body; 
 		return s;
 	}
 }
+
+//const map = {'100':'Informational','200':'OK', '300':'Redirect', '404':'Not Found', '500':'ServerError'};
+
+class Response{
+	constructor(socket){
+		this.sock = socket;
+		const headers = socket.split('\r\n');
+		const arrHeader = headers.map(cur => {return cur.split(':');});
+		const objHeader = {};
+		for (let i = 1; i < arrHeader.length; i++){
+			if(arrHeader[i][1] !== undefined){
+				objHeader[arrHeader[i][0]] = arrHeader[i][1];
+			}	
+		}
+		this.headers = objHeader;
+		const body = socket.split('\r\n\r\n')[1];
+		this.body = body;
+		const statusCode = parseInt(socket.split(' ')[1]);
+		this.statusCode = statusCode;
+	}
+	setHeader(name, value){
+		this.headers[name] = value;
+	}	
+	write(data){
+		this.sock = data;
+	}
+	end(s){
+		this.sock.on(close, this.sock.write(s));
+		
+	}
+} 
 
 const server = net.createServer((sock) => {
 	console.log(sock.remoteAddress, sock.remotePort);
@@ -68,5 +103,6 @@ const server = net.createServer((sock) => {
 server.listen(PORT, HOST);
 
 module.exports = {
-	Request: Request
-}
+	Request: Request,
+	Response: Response
+};

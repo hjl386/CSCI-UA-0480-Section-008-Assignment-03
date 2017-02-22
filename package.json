@@ -13,6 +13,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^3.16.0",
+    "eslint-plugin-mocha": "^4.8.0",
     "fs": "0.0.1-security",
     "mocha-sinon": "^1.1.6",
     "net": "^1.0.2",
