@@ -53,34 +53,69 @@ class Request{
 	}
 }
 
-//const map = {'100':'Informational','200':'OK', '300':'Redirect', '404':'Not Found', '500':'ServerError'};
-
 class Response{
 	constructor(socket){
 		this.sock = socket;
-		const headers = socket.split('\r\n');
-		const arrHeader = headers.map(cur => {return cur.split(':');});
-		const objHeader = {};
-		for (let i = 1; i < arrHeader.length; i++){
-			if(arrHeader[i][1] !== undefined){
-				objHeader[arrHeader[i][0]] = arrHeader[i][1];
-			}	
-		}
-		this.headers = objHeader;
-		const body = socket.split('\r\n\r\n')[1];
-		this.body = body;
-		const statusCode = parseInt(socket.split(' ')[1]);
-		this.statusCode = statusCode;
+		this.headers = {};
+		this.body = '';
+		this.statusCode = 0; 
+		this.code = {'100':'Informational','200':'OK', '300':'Redirect', '400':'ClientError', '500':'ServerError'};
 	}
 	setHeader(name, value){
 		this.headers[name] = value;
 	}	
+
 	write(data){
-		this.sock = data;
+		this.sock.write(data);
 	}
+
 	end(s){
-		this.sock.on(close, this.sock.write(s));
-		
+		if(s){
+			this.write(s + '');
+		}
+		this.sock.end();	
+	}
+
+	send(statusCode, body){
+		this.statusCode = statusCode;
+		this.body = body;
+		let counter = 0;
+		let len = 0;
+		let s = '';
+		for (const i in this.headers){
+			if(this.headers.hasOwnProperty(i)){
+				len++;
+			}
+		}
+		for (const key in this.headers){
+			if (this.headers.hasOwnProperty(key)){
+				s += key + ": " + this.headers[key];
+				counter++;
+			}
+			if (counter !== len){
+				s += '\r\n';
+			}
+		}
+		this.headers = s;
+		this.end(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
+${this.headers}
+
+${this.body}
+`);
+	
+	console.log(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
+${this.headers}
+
+${this.body}
+`);	
+	}
+
+	writeHead(statusCode){
+		this.statusCode = statusCode;
+		this.write(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
+${this.header}
+
+`);	
 	}
 } 
 
