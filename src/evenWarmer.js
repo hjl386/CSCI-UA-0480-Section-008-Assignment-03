@@ -59,7 +59,7 @@ class Response{
 		this.headers = {};
 		this.body = '';
 		this.statusCode = 0; 
-		this.code = {'100':'Informational','200':'OK', '300':'Redirect', '400':'ClientError', '500':'ServerError'};
+		this.code = {'200':'OK', '301':'Moved Permanently', '302':'Found', '303':'Set Other', '400':'Bad Request', '404':'Not Found', '500':'Internal Server Error'};
 	}
 	setHeader(name, value){
 		this.headers[name] = value;
@@ -96,28 +96,61 @@ class Response{
 				s += '\r\n';
 			}
 		}
-		this.headers = s;
 		this.end(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
-${this.headers}
+${s}
 
 ${this.body}
 `);
-	
-	console.log(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
-${this.headers}
-
-${this.body}
-`);	
 	}
 
 	writeHead(statusCode){
 		this.statusCode = statusCode;
+		let counter = 0;
+		let len = 0;
+		let s = '';
+		for (const i in this.headers){
+			if(this.headers.hasOwnProperty(i)){
+				len++;
+			}
+		}
+		for (const key in this.headers){
+			if (this.headers.hasOwnProperty(key)){
+				s += key + ": " + this.headers[key];
+				counter++;
+			}
+			if (counter !== len){
+				s += '\r\n';
+			}
+		}
 		this.write(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
-${this.header}
+${s}
 
 `);	
 	}
-} 
+
+	redirect(statusCode, url){
+//		this.statusCode = statusCode;
+		if(arguments.length === 1){
+			this.statusCode = 301;
+		} else {
+			this.statusCode = statusCode;
+		}
+		this.setHeader('Location', url);					
+		console.log(this.headers);
+		this.send(statusCode, this.body);		
+	}
+	
+	toString(){
+		let s = 'HTTP/1.1 ' + this.statusCode + ' ' +  this.code[this.statusCode] + '\r\n';
+		for (const key in this.headers){
+			if (this.headers.hasOwnProperty(key)){
+				s += key + ": " + this.headers[key] + '\r\n';
+			}
+		}
+		s += '\r\n' + this.body;		
+		return s;
+	}
+}
 
 const server = net.createServer((sock) => {
 	console.log(sock.remoteAddress, sock.remotePort);
