@@ -146,7 +146,6 @@ ${s}
 				
 class App{
 	constructor(){
-		this.a = a;
 	}
 }
 
