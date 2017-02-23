@@ -32,23 +32,12 @@ class Request{
 	
 	toString(){
 		let s = this.method + ' ' + this.path + ' HTTP/1.1\r\n';
-		let counter = 0;
-		let len = 0;
-		for (const i in this.headers){
-			if(this.headers.hasOwnProperty(i)){
-				len++;
-			}
-		}
 		for (const key in this.headers){
 			if (this.headers.hasOwnProperty(key)){
-				s += key + ": " + this.headers[key];
-				counter++;
-			}
-			if (counter !== len){
-				s += '\r\n';
+				s += key + ": " + this.headers[key] + '\r\n';
 			}
 		}
-		s += '\r\n\r\n' + this.body; 
+		s += '\r\n' + this.body;
 		return s;
 	}
 }
@@ -79,21 +68,10 @@ class Response{
 	send(statusCode, body){
 		this.statusCode = statusCode;
 		this.body = body;
-		let counter = 0;
-		let len = 0;
 		let s = '';
-		for (const i in this.headers){
-			if(this.headers.hasOwnProperty(i)){
-				len++;
-			}
-		}
 		for (const key in this.headers){
 			if (this.headers.hasOwnProperty(key)){
-				s += key + ": " + this.headers[key];
-				counter++;
-			}
-			if (counter !== len){
-				s += '\r\n';
+				s += key + ": " + this.headers[key] + '\r\n';
 			}
 		}
 		this.end(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
@@ -105,38 +83,25 @@ ${this.body}
 
 	writeHead(statusCode){
 		this.statusCode = statusCode;
-		let counter = 0;
-		let len = 0;
 		let s = '';
-		for (const i in this.headers){
-			if(this.headers.hasOwnProperty(i)){
-				len++;
-			}
-		}
 		for (const key in this.headers){
 			if (this.headers.hasOwnProperty(key)){
-				s += key + ": " + this.headers[key];
-				counter++;
+				s += key + ": " + this.headers[key] + '\r\n';
 			}
-			if (counter !== len){
-				s += '\r\n';
-			}
-		}
+		}	
 		this.write(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
 ${s}
 
 `);	
-	}
+	}		
 
 	redirect(statusCode, url){
-//		this.statusCode = statusCode;
 		if(arguments.length === 1){
 			this.statusCode = 301;
 		} else {
 			this.statusCode = statusCode;
 		}
 		this.setHeader('Location', url);					
-		console.log(this.headers);
 		this.send(statusCode, this.body);		
 	}
 	
@@ -165,7 +130,6 @@ const server = net.createServer((sock) => {
 		}
 		sock.end();		
 	});
-//	sock.end();
 });
 
 server.listen(PORT, HOST);
@@ -174,3 +138,4 @@ module.exports = {
 	Request: Request,
 	Response: Response
 };
+
