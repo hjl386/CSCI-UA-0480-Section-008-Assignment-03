@@ -96,17 +96,18 @@ ${s}
 	}		
 
 	redirect(statusCode, url){
-		if(arguments.length === 1){
+		if(url === undefined){
 			this.statusCode = 301;
+			this.setHeader('Location', statusCode);
 		} else {
 			this.statusCode = statusCode;
+			this.setHeader('Location', url);					
 		}
-		this.setHeader('Location', url);					
-		this.send(statusCode, this.body);		
+			this.send(this.statusCode, this.body);		
 	}
 	
 	toString(){
-		let s = 'HTTP/1.1 ' + this.statusCode + ' ' +  this.code[this.statusCode] + '\r\n';
+		let s = 'HTTP/1.1 ' + this.statusCode + ' ' + this.code[this.statusCode] + '\r\n';
 		for (const key in this.headers){
 			if (this.headers.hasOwnProperty(key)){
 				s += key + ": " + this.headers[key] + '\r\n';
@@ -116,7 +117,7 @@ ${s}
 		return s;
 	}
 }
-
+/*
 const server = net.createServer((sock) => {
 	console.log(sock.remoteAddress, sock.remotePort);
 	sock.on('data', (binaryData) => {
@@ -131,6 +132,29 @@ const server = net.createServer((sock) => {
 		sock.end();		
 	});
 });
+*/
+
+const server = net.createServer((sock) => {
+	console.log(sock.remoteAddress, sock.remotePort);
+	sock.on('data', (binaryData) => {
+		const req = new Request(binaryData + '');
+		const res = new Response(sock);
+		if(req.path === '/'){
+			res.setHeader('Content-Type', 'text/html');
+			res.body = '<link rel="stylesheet" href="foo.css"> <h2>this is a read header!</h2> <em>Hello </em><strong>World</strong>';
+			res.send(200, res.body);
+		} else if(req.path === '/foo.css'){
+			res.setHeader('Content-Type', 'text/css');
+			res.body = 'h2{color:red;}';
+			res.send(200, res.body);
+		} else {
+			res.setHeader('Content-Type', 'text/plain');
+			res.body = 'uh oh... 404 page not found';
+			res.send(404, res.body);
+		}
+		res.end();
+	});
+});
 
 server.listen(PORT, HOST);
 
@@ -138,4 +162,3 @@ module.exports = {
 	Request: Request,
 	Response: Response
 };
-
