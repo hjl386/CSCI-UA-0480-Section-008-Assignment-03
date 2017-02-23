@@ -3,6 +3,7 @@
 
 const net = require('net');
 const [HOST, PORT] = ['127.0.0.1', 8080];
+const fs = require('fs');
 
 class Request{
 	constructor(httpRequest){		
@@ -49,7 +50,9 @@ class Response{
 		this.body = '';
 		this.statusCode = 0; 
 		this.code = {'200':'OK', '301':'Moved Permanently', '302':'Found', '303':'Set Other', '400':'Bad Request', '404':'Not Found', '500':'Internal Server Error'};
+		this.type = {'jpeg':'image/jpeg', 'jpg':'image/jpeg', 'png':'image/png','gif':'image/gif', 'html':'text/html', 'css':'text/css', 'txt':'text/plain'};	
 	}
+
 	setHeader(name, value){
 		this.headers[name] = value;
 	}	
@@ -91,7 +94,6 @@ ${this.body}
 		}	
 		this.write(`HTTP/1.1 ${this.statusCode} ${this.code[statusCode]}
 ${s}
-
 `);	
 	}		
 
@@ -116,6 +118,35 @@ ${s}
 		s += '\r\n' + this.body;		
 		return s;
 	}
+
+	sendFile(fileName){
+		const ext = fileName.split('.').pop();
+		const publicRoot = __dirname + '/../public/';
+		if (ext === 'jpeg' || ext === 'jpg' || ext === 'png' || ext === 'gif'){
+			const filePath = publicRoot + 'img/' + fileName;
+			console.log(filePath);
+			fs.readFile(filePath, {}, (err, data) => {
+				if(err){
+					this.writeHead(500);
+				}
+				this.setHeader('Content-Type', this.type[ext]);
+				this.writeHead(200);
+				this.write(data);
+				this.end();
+			});	
+		} else {
+			const filePath = publicRoot + '/html/' + fileName;
+			fs.readFile(filePath, {'encoding': 'utf8'}, (err, data) => {
+				if(err){
+					this.writeHead(500);
+				}
+				this.setHeader('Content-Type', this.type[ext]);
+				this.writeHead(200);
+				this.end(data);
+			});	
+		}		
+	}
+
 }
 /*
 const server = net.createServer((sock) => {
@@ -147,12 +178,16 @@ const server = net.createServer((sock) => {
 			res.setHeader('Content-Type', 'text/css');
 			res.body = 'h2{color:red;}';
 			res.send(200, res.body);
+		} else if(req.path === '/test'){
+			res.sendFile('test.html');
+		} else if(req.path === '/img/bmo1.gif'){
+			res.sendFile('bmo1.gif');
 		} else {
 			res.setHeader('Content-Type', 'text/plain');
 			res.body = 'uh oh... 404 page not found';
 			res.send(404, res.body);
 		}
-		res.end();
+	//	res.end();
 	});
 });
 
