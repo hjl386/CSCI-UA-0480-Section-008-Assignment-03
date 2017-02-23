@@ -119,32 +119,27 @@ ${s}
 		return s;
 	}
 
+	handleRead(contentType, err, data){
+		if(err){
+			this.writeHead(500);
+		}
+		this.setHeader('Content-Type', contentType);
+		this.writeHead(200);
+		this.write(data);
+		this.end();
+	}
+
 	sendFile(fileName){
 		const ext = fileName.split('.').pop();
 		const publicRoot = __dirname + '/../public/';
 		if (ext === 'jpeg' || ext === 'jpg' || ext === 'png' || ext === 'gif'){
 			const filePath = publicRoot + 'img/' + fileName;
-			console.log(filePath);
-			fs.readFile(filePath, {}, (err, data) => {
-				if(err){
-					this.writeHead(500);
-				}
-				this.setHeader('Content-Type', this.type[ext]);
-				this.writeHead(200);
-				this.write(data);
-				this.end();
-			});	
+			fs.readFile(filePath, {}, this.handleRead.bind(this, this.type[ext]));
 		} else {
 			const filePath = publicRoot + '/html/' + fileName;
-			fs.readFile(filePath, {'encoding': 'utf8'}, (err, data) => {
-				if(err){
-					this.writeHead(500);
-				}
-				this.setHeader('Content-Type', this.type[ext]);
-				this.writeHead(200);
-				this.end(data);
-			});	
-		}		
+			fs.readFile(filePath, {'encoding':'utf8'}, this.handleRead.bind(this, this.type[ext]));
+		}
+				
 	}
 
 }
