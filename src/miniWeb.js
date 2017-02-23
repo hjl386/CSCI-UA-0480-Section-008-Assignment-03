@@ -6,6 +6,7 @@ const [HOST, PORT] = ['127.0.0.1', 8080];
 const fs = require('fs');
 
 class Request{
+
 	constructor(httpRequest){		
 /*		let s = '';
 		s += 'GET /foo.html HTTP/1.1\r\n';	//Request line
@@ -44,6 +45,7 @@ class Request{
 }
 
 class Response{
+
 	constructor(socket){
 		this.sock = socket;
 		this.headers = {};
@@ -145,8 +147,46 @@ ${s}
 }
 				
 class App{
+	
 	constructor(){
+//		this.handleConnection = handleConnection();
+		this.routes = {};
+		this.server = net.createServer(this.handleConnection.bind(this));
 	}
+	
+	get(path, cb){
+		this.routes[path] = cb;	
+	}	
+
+	listen(port, host){
+		this.server.listen(port, host);		
+	}
+
+	handleConnection(sock){
+		sock.on('data', this.handleRequestData.bind(this, sock));
+	}
+	
+	handleRequestData(sock, binaryDate){
+		const data = binaryData + '';
+		const req = new Request(data);
+		const res = new Response(sock);
+	//	logResponse(req, res);
+		if(!req.headers.hasOwnProperty('Host')){
+			res.writeHead(400);	
+		}
+		if(req.path === undefined){
+			res.writeHead(404);
+		} else{	
+			const path = this.routes[req.path].slice(0, -1);
+		}
+		sock.on('close', this.logResponse.bind(this, req, res));
+//Still Working on it	
+	}	
+	
+	logResponse(req, res){
+		console.log(req.toString(), '\r\n', res.toString());
+	}
+	
 }
 
 const server = net.createServer((sock) => {
