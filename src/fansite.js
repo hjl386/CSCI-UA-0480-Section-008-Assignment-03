@@ -31,6 +31,7 @@ app.get('/rando', function(req, res){
 	</head>
 	<body>
 		<center><h1>PIKA PIKA PIKA</h1></center>
+		<h2> PIKACHUS <3 </h2>
 		<nav role='links'>
 			<a href='/'>Home</a>
 			<a href='/about'></a>
