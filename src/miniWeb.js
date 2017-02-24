@@ -171,11 +171,11 @@ class App{
 		const res = new Response(sock);
 		if(!req.headers.hasOwnProperty('Host')){
 			res.writeHead(400);	
-		//	this.routes[req.path](req, res);		
 		}
-		let path =''
-		if(req.path[req.path.length] ==='/'){
-			path = req.path.slice(0, -1);
+		let path = req.path;
+		if(req.path[req.path.length-1] ==='/' && req.path.length > 1){
+//			path = req.path.slice(0, -1);
+			path = path.substr(0, path.length-1);
 		} else{
 			path = req.path;
 		}

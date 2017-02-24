@@ -30,14 +30,15 @@ app.get('/rando', function(req, res){
 		<link rel='stylesheet' type='text/css' href='/css/base.css'>
 	</head>
 	<body>
+		<center><h1>PIKA PIKA PIKA</h1></center>
 		<nav role='links'>
 			<a href='/'>Home</a>
 			<a href='/about'></a>
 			<a href='/rando'>Rando</a>
 		</nav> `);
-	const images = ['extra', 'image1', 'image2', 'image3'];
-	const random = images[Math.floor(Math.random() *images.length)];
-	res.write('<img src=\'/' + random + '\' width=\'500\'></img>');
+	const arrImage = ['extra', 'image1', 'image2', 'image3'];
+	const ran = arrImage[Math.floor(Math.random() * arrImage.length)];
+	res.write('<img src=\'/' + ran + '\' width=\'500\'></img>');
 	res.write('</body> <html>');
 	res.end();	
 });
