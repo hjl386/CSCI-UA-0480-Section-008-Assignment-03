@@ -149,7 +149,6 @@ ${s}
 class App{
 	
 	constructor(){
-//		this.handleConnection = handleConnection();
 		this.routes = {};
 		this.server = net.createServer(this.handleConnection.bind(this));
 	}
@@ -166,21 +165,27 @@ class App{
 		sock.on('data', this.handleRequestData.bind(this, sock));
 	}
 	
-	handleRequestData(sock, binaryDate){
+	handleRequestData(sock, binaryData){
 		const data = binaryData + '';
 		const req = new Request(data);
 		const res = new Response(sock);
-	//	logResponse(req, res);
 		if(!req.headers.hasOwnProperty('Host')){
 			res.writeHead(400);	
+		//	this.routes[req.path](req, res);		
 		}
-		if(req.path === undefined){
+		let path =''
+		if(req.path[req.path.length] ==='/'){
+			path = req.path.slice(0, -1);
+		} else{
+			path = req.path;
+		}
+		if(this.routes[path] === undefined){
 			res.writeHead(404);
-		} else{	
-			const path = this.routes[req.path].slice(0, -1);
-		}
+		} else {
+			this.routes[path](req, res);
+		}	
+		
 		sock.on('close', this.logResponse.bind(this, req, res));
-//Still Working on it	
 	}	
 	
 	logResponse(req, res){
@@ -188,7 +193,7 @@ class App{
 	}
 	
 }
-
+/*
 const server = net.createServer((sock) => {
 	console.log(sock.remoteAddress, sock.remotePort);
 	sock.on('data', (binaryData) => {
@@ -215,7 +220,7 @@ const server = net.createServer((sock) => {
 });
 
 server.listen(PORT, HOST);
-
+*/
 module.exports = {
 	Request: Request,
 	Response: Response,
